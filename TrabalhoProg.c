@@ -65,7 +65,7 @@ void realizaJogo(tJogador jogador1, tJogador jogador2, char * endereco);
 int todosOsNaviosAfundaram(tTabuleiro mapa);
 int EhJogadaValida(int linha, int coluna, tTabuleiro mapa);
 int destruiuPeca(tTabuleiro mapa, int id);
-tTabuleiro realizaJogada(int linha, int coluna, tTabuleiro mapa);
+tTabuleiro realizaJogada(int linha, int coluna, tTabuleiro mapa, char * nome);
 int CodigoValido(char * jogada);
 int TransformaJogadaColuna(char * jogada);
 tTabuleiro jogaJogador(char * nomeJogadorAtacante, tTabuleiro campoJogadorAtacado);
@@ -84,6 +84,7 @@ int main(int argc, char * argv[]){
 	if(criaArquivoValidacao(argv[1], jogador1.campoJogador, jogador2.campoJogador)){  //Retorna 1 caso as condicoes estejam aptas para o prosseguimento do jogo
 		jogador1=InicializaJogador(jogador1);
 		jogador2=InicializaJogador(jogador2);
+		printf("\n");
 		criaArquivoInicializacao(argv[1], jogador1, jogador2);
 	}
 	else{
@@ -164,7 +165,7 @@ tTabuleiro InicializaTabuleiro(tJogador jogador){
 	return jogador.campoJogador;
 }
 tJogador InicializaJogador(tJogador jogador){
-	printf("Nome do Jogador %d:\n", jogador.id);
+	printf("Nome do Jogador %d:", jogador.id);
 	scanf("%s", &jogador.nome);
 	return jogador;
 }
@@ -570,10 +571,11 @@ int EhJogadaValida(int linha, int coluna, tTabuleiro mapa){
 		return 0;
 	}
 }
-tTabuleiro realizaJogada(int linha, int coluna, tTabuleiro mapa){
+tTabuleiro realizaJogada(int linha, int coluna, tTabuleiro mapa, char * nome){
 	char linhaChar = linha+'a';
 	mapa.posicao[linha][coluna].FoiAlvejado=1;
 	if(mapa.posicao[linha][coluna].EhNavio==1){
+		salvarJogada(linhaChar, coluna, nome, mapa.posicao[linha][coluna], 1); // 1 se acertou
 		mapa.posicao[linha][coluna].simbolo='X';
 		mapa.posicao[linha][coluna].EhNavio=0;
 		if(destruiuPeca(mapa, mapa.posicao[linha][coluna].IdDoNavio)){
@@ -581,27 +583,35 @@ tTabuleiro realizaJogada(int linha, int coluna, tTabuleiro mapa){
 			{
 			case 1:
 				printf("%c%d:Afundou Carrier\n", linhaChar, coluna+1);
+				printf("\n");
 				break;
 			case 2:
 				printf("%c%d:Afundou Battleship\n", linhaChar, coluna+1);
+				printf("\n");
 				break;
 			case 3:
 				printf("%c%d:Afundou Cruiser\n", linhaChar, coluna+1);
+				printf("\n");
 				break;
 			case 4:
 				printf("%c%d:Afundou Submarine\n", linhaChar, coluna+1);
+				printf("\n");
 				break;
 			case 5:
 				printf("%c%d:Afundou Destroyer\n", linhaChar, coluna+1);
+				printf("\n");
 				break;
 			}
 		}
 		else{
 			printf("%c%d:Tiro!\n", linhaChar, coluna+1);
+			printf("\n");
 		}
 	}
 	else{
+		salvarJogada(linhaChar, coluna, nome, mapa.posicao[linha][coluna], 0); // 0 se errou
 		printf("%c%d:Agua\n", linhaChar, coluna+1);
+		printf("\n");
 		mapa.posicao[linha][coluna].simbolo='o';
 	}
 	return mapa;
@@ -649,11 +659,12 @@ tTabuleiro jogaJogador(char * nomeJogadorAtacante, tTabuleiro campoJogadorAtacad
 	printf("Jogada de %s:", nomeJogadorAtacante);
 		do{
 			scanf("%s", &jogada);
+			printf("\n");
 			if(CodigoValido(jogada)){
 				int linha = jogada[0]-'a';								//jogada[0]-'a' serve para transformar o valor ascii do caractere
 				int coluna = TransformaJogadaColuna(jogada)-1;			//referente a linha lido no valor int correto.
 				if(EhJogadaValida(linha, coluna, campoJogadorAtacado)){
-					campoJogadorAtacado=realizaJogada(linha, coluna, campoJogadorAtacado);
+					campoJogadorAtacado=realizaJogada(linha, coluna, campoJogadorAtacado, nomeJogadorAtacante);
 					EhValida=1;
 				}
 				else{
@@ -680,4 +691,7 @@ int CasaExtrapolouTabuleiro(int linha, int coluna){
 	else{
 		return 1;
 	}
+}
+void salvarJogada(char linha, int coluna, char * nome, tCasa casaDoTabuleiro, int Acertou){
+	char frasesJogador1[100][100], frasesJogador2[100][100];
 }
