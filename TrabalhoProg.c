@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
 // Tabuleiro
 #define TAM_TABULEIRO 10 // Tamanho pode ser alterado
@@ -15,6 +16,12 @@
 #define CRUISER_SIZE 3
 #define SUBMARINE_SIZE 3
 #define DESTROYER_SIZE 2
+
+#define CARRIER 1
+#define BATTLESHIP 2
+#define CRUISER 3			//Código numérico para as peças
+#define SUBMARINE 4     
+#define DESTROYER 5
 
 // Orientação
 #define VERTICAL 0
@@ -84,6 +91,8 @@ void CriaArquivoEstatisticas(tJogador jogador1, tJogador jogador2, char * endere
 int FoiTiro(int coluna, char linha, tTabuleiro tabuleiro);
 int idRepetida (int id, int * vetor, int tamanhoMax);
 void printaNaviosEstatisticas(FILE * estatisticas, tJogador jogadadorPrintado, tJogador outroJogador, tTabuleiro campoJogadorPrintado, tTabuleiro campoOutroJogador);
+void gerarTabuleiroAleatorio(char * endereco);
+int numeroRepetido(int num, int * ordem, int tamanhoMax);
 int main(int argc, char * argv[]){
 	tJogador jogador1; tJogador jogador2;
 	jogador1.id=1; jogador2.id=2;
@@ -91,20 +100,28 @@ int main(int argc, char * argv[]){
 		printf("ERRO: O diretorio de arquivos de configuracao nao foi informado\n");
 		return 0;
 	}
-	sprintf(jogador1.enderecoTabuleiro, "%s/tabu_1.txt", argv[1]);
-	sprintf(jogador2.enderecoTabuleiro, "%s/tabu_2.txt", argv[1]);
-	jogador1.campoJogador = InicializaTabuleiro(jogador1);
-	jogador2.campoJogador = InicializaTabuleiro(jogador2);
-	if(criaArquivoValidacao(argv[1], jogador1.campoJogador, jogador2.campoJogador)){  //Retorna 1 caso as condicoes estejam aptas para o prosseguimento do jogo
-		jogador1=InicializaJogador(jogador1);
-		jogador2=InicializaJogador(jogador2);
-		printf("\n");
-		criaArquivoInicializacao(argv[1], jogador1, jogador2);
-	}
-	else{
+	if(strcmp(argv[1], "-gt")==0){ //Gerar Tabuleiro Aleatório
+		char enderecoTabuleiroAleatorio[1001];
+		sprintf(enderecoTabuleiroAleatorio, "%s", argv[2]);
+		gerarTabuleiroAleatorio(enderecoTabuleiroAleatorio);
 		return 0;
 	}
-	realizaJogo(jogador1, jogador2, argv[1]);
+	else{							//Execucao do jogo normalmente
+		sprintf(jogador1.enderecoTabuleiro, "%s/tabu_1.txt", argv[1]);
+		sprintf(jogador2.enderecoTabuleiro, "%s/tabu_2.txt", argv[1]);
+		jogador1.campoJogador = InicializaTabuleiro(jogador1);
+		jogador2.campoJogador = InicializaTabuleiro(jogador2);
+		if(criaArquivoValidacao(argv[1], jogador1.campoJogador, jogador2.campoJogador)){  //Retorna 1 caso as condicoes estejam aptas para o prosseguimento do jogo
+			jogador1=InicializaJogador(jogador1);
+			jogador2=InicializaJogador(jogador2);
+			printf("\n");
+			criaArquivoInicializacao(argv[1], jogador1, jogador2);
+		}
+		else{
+			return 0;
+		}
+		realizaJogo(jogador1, jogador2, argv[1]);
+	}
 	return 0;
 }
 tTabuleiro InicializaMapa(tTabuleiro mapa){
@@ -139,19 +156,19 @@ tTabuleiro InicializaTabuleiro(tJogador jogador){
 		fscanf(jogador.arquivoTabuleiro, "%*[\r\n]");
 		peca=reconhecePeca(tipoDePeca); 
 		switch(peca){
-			case 1:
+			case CARRIER:
 				jogador.campoJogador.numCarrier++;
 				break;
-			case 2:
+			case BATTLESHIP:
 				jogador.campoJogador.numBattleship++;
 				break;
-			case 3:
+			case CRUISER:
 				jogador.campoJogador.numCruiser++;
 				break;
-			case 4:
+			case SUBMARINE:
 				jogador.campoJogador.numSubmarine++;
 				break;
-			case 5:
+			case DESTROYER:
 				jogador.campoJogador.numDestroyer++;
 				break;
 			default:
@@ -196,19 +213,19 @@ tJogador InicializaJogador(tJogador jogador){
 }
 int reconhecePeca(char * peca){
 	if(!strcmp(peca, "Carrier")){
-		return 1;
+		return CARRIER;
 	}
 	else if(!strcmp(peca, "Battleship")){
-		return 2;
+		return BATTLESHIP;
 	}
 	else if(!strcmp(peca,"Cruiser")){
-		return 3;
+		return CRUISER;
 	}
 	else if(!strcmp(peca, "Submarine")){
-		return 4;
+		return SUBMARINE;
 	}
 	else if(!strcmp(peca,"Destroyer")){
-		return 5;
+		return DESTROYER;
 	}
 	else{
 		return -1;
@@ -296,7 +313,7 @@ int TemNavioProx(tTabuleiro mapa, tPosicao posicao, int tamanhoPeca){
 }
 int EhPossivelcolocarPeca(int peca, tJogador jogador){
 	switch(peca){
-		case 1:
+		case CARRIER:
 			if(!(VaiExtrapolarLimites(jogador.posicaoInicial, CARRIER_SIZE))){
 				if(!(TemNavioProx(jogador.campoJogador, jogador.posicaoInicial, CARRIER_SIZE))){
 					return 1;
@@ -309,7 +326,7 @@ int EhPossivelcolocarPeca(int peca, tJogador jogador){
 				return 0;
 			}
 			break;
-		case 2:
+		case BATTLESHIP:
 			if(!(VaiExtrapolarLimites(jogador.posicaoInicial, BATTLESHIP_SIZE))){
 				if(!(TemNavioProx(jogador.campoJogador, jogador.posicaoInicial, BATTLESHIP_SIZE))){
 					return 1;
@@ -322,7 +339,7 @@ int EhPossivelcolocarPeca(int peca, tJogador jogador){
 				return 0;
 			}
 			break;
-		case 3:
+		case CRUISER:
 			if(!(VaiExtrapolarLimites(jogador.posicaoInicial, CRUISER_SIZE))){
 				if(!(TemNavioProx(jogador.campoJogador, jogador.posicaoInicial, CRUISER_SIZE))){
 					return 1;
@@ -335,7 +352,7 @@ int EhPossivelcolocarPeca(int peca, tJogador jogador){
 				return 0;
 			}
 			break;
-		case 4:
+		case SUBMARINE:
 			if(!(VaiExtrapolarLimites(jogador.posicaoInicial, SUBMARINE_SIZE))){
 				if(!(TemNavioProx(jogador.campoJogador, jogador.posicaoInicial, SUBMARINE_SIZE))){
 					return 1;
@@ -348,7 +365,7 @@ int EhPossivelcolocarPeca(int peca, tJogador jogador){
 				return 0;
 			}
 			break;
-		case 5:
+		case DESTROYER:
 			if(!(VaiExtrapolarLimites(jogador.posicaoInicial, DESTROYER_SIZE))){
 				if(!(TemNavioProx(jogador.campoJogador, jogador.posicaoInicial, DESTROYER_SIZE))){
 					return 1;
@@ -367,7 +384,7 @@ tTabuleiro ColocaPeca(int peca, tPosicao posicao, tTabuleiro mapa){
 	int i=0;
 	switch (peca)
 	{
-		case 1:
+		case CARRIER:
 			if(posicao.orientacao==VERTICAL){
 				for(i=0;i<CARRIER_SIZE;i++){
 					mapa.posicao[posicao.linha-'a'+i][posicao.coluna].simbolo=MAPA_NAVIO;
@@ -385,7 +402,7 @@ tTabuleiro ColocaPeca(int peca, tPosicao posicao, tTabuleiro mapa){
 				}
 			}
 			break;
-		case 2:
+		case BATTLESHIP:
 			if(posicao.orientacao==VERTICAL){
 				for(i=0;i<BATTLESHIP_SIZE;i++){
 					mapa.posicao[posicao.linha-'a'+i][posicao.coluna].simbolo=MAPA_NAVIO;
@@ -403,7 +420,7 @@ tTabuleiro ColocaPeca(int peca, tPosicao posicao, tTabuleiro mapa){
 				}
 			}
 			break;
-		case 3:
+		case CRUISER:
 			if(posicao.orientacao==VERTICAL){
 				for(i=0;i<CRUISER_SIZE;i++){
 					mapa.posicao[posicao.linha+i-'a'][posicao.coluna].simbolo=MAPA_NAVIO;
@@ -421,7 +438,7 @@ tTabuleiro ColocaPeca(int peca, tPosicao posicao, tTabuleiro mapa){
 				}
 			}
 			break;
-		case 4:
+		case SUBMARINE:
 			if(posicao.orientacao==VERTICAL){
 				for(i=0;i<SUBMARINE_SIZE;i++){
 					mapa.posicao[posicao.linha-'a'+i][posicao.coluna].simbolo=MAPA_NAVIO;
@@ -439,7 +456,7 @@ tTabuleiro ColocaPeca(int peca, tPosicao posicao, tTabuleiro mapa){
 				}
 			}
 			break;
-		case 5:
+		case DESTROYER:
 			if(posicao.orientacao==VERTICAL){
 				for(i=0;i<DESTROYER_SIZE;i++){
 					mapa.posicao[posicao.linha+i-'a'][posicao.coluna].simbolo=MAPA_NAVIO;
@@ -609,23 +626,23 @@ tTabuleiro realizaJogada(int linha, int coluna, tTabuleiro mapa, char * nome){
 		if(destruiuPeca(mapa, mapa.posicao[linha][coluna].IdDoNavio)){
 			switch (mapa.posicao[linha][coluna].tipoDeNavio)
 			{
-			case 1:
+			case CARRIER:
 				printf("%c%d:Afundou Carrier\n", linhaChar, coluna+1);
 				printf("\n");
 				break;
-			case 2:
+			case BATTLESHIP:
 				printf("%c%d:Afundou Battleship\n", linhaChar, coluna+1);
 				printf("\n");
 				break;
-			case 3:
+			case CRUISER:
 				printf("%c%d:Afundou Cruiser\n", linhaChar, coluna+1);
 				printf("\n");
 				break;
-			case 4:
+			case SUBMARINE:
 				printf("%c%d:Afundou Submarine\n", linhaChar, coluna+1);
 				printf("\n");
 				break;
-			case 5:
+			case DESTROYER:
 				printf("%c%d:Afundou Destroyer\n", linhaChar, coluna+1);
 				printf("\n");
 				break;
@@ -745,19 +762,19 @@ void CriaArquivoResultado(tJogador jogador1, tJogador jogador2, char * endereco,
 		fprintf(resultado, "%c%d - ", jogador1.jogadasLinha[i], jogador1.jogadasColuna[i]);
 		if(campoJogador2.posicao[jogador1.jogadasLinha[i]-'a'][jogador1.jogadasColuna[i]-1].EhNavio==1){
 			switch(campoJogador2.posicao[jogador1.jogadasLinha[i]-'a'][jogador1.jogadasColuna[i]-1].tipoDeNavio){
-				case 1:
+				case CARRIER:
 					fprintf(resultado, "Tiro - Carrier - ID %02d\n", campoJogador2.posicao[jogador1.jogadasLinha[i]-'a'][jogador1.jogadasColuna[i]-1].IdDoNavio);
 					break;
-				case 2:
+				case BATTLESHIP:
 					fprintf(resultado, "Tiro - Battleship - ID %02d\n", campoJogador2.posicao[jogador1.jogadasLinha[i]-'a'][jogador1.jogadasColuna[i]-1].IdDoNavio);
 					break;
-				case 3:
+				case CRUISER:
 					fprintf(resultado, "Tiro - Cruiser - ID %02d\n", campoJogador2.posicao[jogador1.jogadasLinha[i]-'a'][jogador1.jogadasColuna[i]-1].IdDoNavio);
 					break;
-				case 4:
+				case SUBMARINE:
 					fprintf(resultado, "Tiro - Submarine - ID %02d\n", campoJogador2.posicao[jogador1.jogadasLinha[i]-'a'][jogador1.jogadasColuna[i]-1].IdDoNavio);
 					break;
-				case 5:
+				case DESTROYER:
 					fprintf(resultado, "Tiro - Destroyer - ID %02d\n", campoJogador2.posicao[jogador1.jogadasLinha[i]-'a'][jogador1.jogadasColuna[i]-1].IdDoNavio);
 					break;
 			}
@@ -772,19 +789,19 @@ void CriaArquivoResultado(tJogador jogador1, tJogador jogador2, char * endereco,
 		fprintf(resultado, "%c%d - ", jogador2.jogadasLinha[j], jogador2.jogadasColuna[j]);
 		if(campoJogador1.posicao[jogador2.jogadasLinha[j]-'a'][jogador2.jogadasColuna[j]-1].EhNavio==1){
 			switch(campoJogador1.posicao[jogador2.jogadasLinha[j]-'a'][jogador2.jogadasColuna[j]-1].tipoDeNavio){
-				case 1:
+				case CARRIER:
 					fprintf(resultado, "Tiro - Carrier - ID %02d\n", campoJogador1.posicao[jogador2.jogadasLinha[j]-'a'][jogador2.jogadasColuna[j]-1].IdDoNavio);
 					break;
-				case 2:
+				case BATTLESHIP:
 					fprintf(resultado, "Tiro - Battleship - ID %02d\n", campoJogador1.posicao[jogador2.jogadasLinha[j]-'a'][jogador2.jogadasColuna[j]-1].IdDoNavio);
 					break;
-				case 3:
+				case CRUISER:
 					fprintf(resultado, "Tiro - Cruiser - ID %02d\n", campoJogador1.posicao[jogador2.jogadasLinha[j]-'a'][jogador2.jogadasColuna[j]-1].IdDoNavio);
 					break;
-				case 4:
+				case SUBMARINE:
 					fprintf(resultado, "Tiro - Submarine - ID %02d\n", campoJogador1.posicao[jogador2.jogadasLinha[j]-'a'][jogador2.jogadasColuna[j]-1].IdDoNavio);
 					break;
-				case 5:
+				case DESTROYER:
 					fprintf(resultado, "Tiro - Destroyer - ID %02d\n", campoJogador1.posicao[jogador2.jogadasLinha[j]-'a'][jogador2.jogadasColuna[j]-1].IdDoNavio);
 					break;
 			}
@@ -881,7 +898,7 @@ void printaNaviosEstatisticas(FILE * estatisticas, tJogador jogadadorPrintado, t
 	}
 	for(i=0;outroJogador.jogadasColuna[i]!=0;i++){
 		if(FoiTiro(outroJogador.jogadasColuna[i], outroJogador.jogadasLinha[i], campoJogadorPrintado)){
-			if(campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].tipoDeNavio==2 && idRepetida(campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].IdDoNavio, idsJaPrintadas, k)==0){ 	//2 - Battleship (primeiro na ordem alfabetica)
+			if(campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].tipoDeNavio==BATTLESHIP && idRepetida(campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].IdDoNavio, idsJaPrintadas, k)==0){ 	//2 - Battleship (primeiro na ordem alfabetica)
 				fprintf(estatisticas, "%02d - Battleship - ID %02d\n", i+1, campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].IdDoNavio);
 				idsJaPrintadas[k]=campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].IdDoNavio;
 				k++;
@@ -890,7 +907,7 @@ void printaNaviosEstatisticas(FILE * estatisticas, tJogador jogadadorPrintado, t
 	}
 	for(i=0;outroJogador.jogadasColuna[i]!=0;i++){
 		if(FoiTiro(outroJogador.jogadasColuna[i], outroJogador.jogadasLinha[i], campoJogadorPrintado)){
-			if(campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].tipoDeNavio==1 && idRepetida(campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].IdDoNavio, idsJaPrintadas, k)==0){ 	//1 - Carrier (segundo na ordem alfabetica)
+			if(campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].tipoDeNavio==CARRIER && idRepetida(campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].IdDoNavio, idsJaPrintadas, k)==0){ 	//1 - Carrier (segundo na ordem alfabetica)
 				fprintf(estatisticas, "%02d - Carrier - ID %02d\n", i+1, campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].IdDoNavio);
 				idsJaPrintadas[k]=campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].IdDoNavio;
 				k++;
@@ -899,7 +916,7 @@ void printaNaviosEstatisticas(FILE * estatisticas, tJogador jogadadorPrintado, t
 	}
 	for(i=0;outroJogador.jogadasColuna[i]!=0;i++){
 		if(FoiTiro(outroJogador.jogadasColuna[i], outroJogador.jogadasLinha[i], campoJogadorPrintado)){
-			if(campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].tipoDeNavio==3 && idRepetida(campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].IdDoNavio, idsJaPrintadas, k)==0){ 	//3 - Cruiser (terceiro na ordem alfabetica)
+			if(campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].tipoDeNavio==CRUISER && idRepetida(campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].IdDoNavio, idsJaPrintadas, k)==0){ 	//3 - Cruiser (terceiro na ordem alfabetica)
 				fprintf(estatisticas, "%02d - Cruiser - ID %02d\n", i+1, campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].IdDoNavio);
 				idsJaPrintadas[k]=campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].IdDoNavio;
 				k++;
@@ -908,7 +925,7 @@ void printaNaviosEstatisticas(FILE * estatisticas, tJogador jogadadorPrintado, t
 	}
 	for(i=0;outroJogador.jogadasColuna[i]!=0;i++){
 		if(FoiTiro(outroJogador.jogadasColuna[i], outroJogador.jogadasLinha[i], campoJogadorPrintado)){
-			if(campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].tipoDeNavio==5 && idRepetida(campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].IdDoNavio, idsJaPrintadas, k)==0){ 	//2 - Destroyer (quarto na ordem alfabetica)
+			if(campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].tipoDeNavio==DESTROYER && idRepetida(campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].IdDoNavio, idsJaPrintadas, k)==0){ 	//2 - Destroyer (quarto na ordem alfabetica)
 				fprintf(estatisticas, "%02d - Destroyer - ID %02d\n", i+1, campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].IdDoNavio);
 				idsJaPrintadas[k]=campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].IdDoNavio;
 				k++;
@@ -917,11 +934,60 @@ void printaNaviosEstatisticas(FILE * estatisticas, tJogador jogadadorPrintado, t
 	}
 	for(i=0;outroJogador.jogadasColuna[i]!=0;i++){
 		if(FoiTiro(outroJogador.jogadasColuna[i], outroJogador.jogadasLinha[i], campoJogadorPrintado)){
-			if(campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].tipoDeNavio==4 && idRepetida(campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].IdDoNavio, idsJaPrintadas, k)==0){ 	//2 - Submarine (ultimo na ordem alfabetica)
+			if(campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].tipoDeNavio==SUBMARINE && idRepetida(campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].IdDoNavio, idsJaPrintadas, k)==0){ 	//2 - Submarine (ultimo na ordem alfabetica)
 				fprintf(estatisticas, "%02d - Submarine - ID %02d\n", i+1, campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].IdDoNavio);
 				idsJaPrintadas[k]=campoJogadorPrintado.posicao[outroJogador.jogadasLinha[i]-'a'][outroJogador.jogadasColuna[i]-1].IdDoNavio;
 				k++;
 			}		
 		}
 	}
+}
+void gerarTabuleiroAleatorio(char * endereco){
+	FILE * tabuleiroAleatorio=fopen(endereco, "w");
+	if(!tabuleiroAleatorio){
+		printf("Erro com o arquivo");
+	}
+	srand(time(NULL));
+	int ordem[5]={-1,-1,-1,-1,-1}, i=0, num;
+	while(ordem[4]==-1){
+		num=rand()%5 +1;
+		if(numeroRepetido(num, ordem, 5)==0){
+			ordem[i]=num;
+			i++;
+		}
+	}
+	for(i=0;i<5;i++){ // 5 é a quantidade de navios
+		switch (ordem[i])
+		{
+		case CARRIER:
+			fprintf(tabuleiroAleatorio, "Carrier;");
+			break;
+		case BATTLESHIP:
+			fprintf(tabuleiroAleatorio, "Battleship;");
+			break;
+		case CRUISER:
+			fprintf(tabuleiroAleatorio, "Cruiser;");
+			break;
+		case SUBMARINE:
+			fprintf(tabuleiroAleatorio, "Submarine;");
+			break;
+		case DESTROYER:
+			fprintf(tabuleiroAleatorio, "Destroyer;");
+			break;
+		default:
+			printf("Erro no reconhecimento da ordem do navio tabuleiro aleatorio");
+			break;
+		}
+	}
+	fclose(tabuleiroAleatorio);
+}
+int numeroRepetido(int num, int * ordem, int tamanhoMax){
+	int j=0;
+	while(j<tamanhoMax){
+		if(num==ordem[j]){
+			return 1;
+		}
+		j++;
+	}
+	return 0;
 }
