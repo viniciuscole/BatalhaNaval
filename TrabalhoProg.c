@@ -943,6 +943,8 @@ void printaNaviosEstatisticas(FILE * estatisticas, tJogador jogadadorPrintado, t
 	}
 }
 void gerarTabuleiroAleatorio(char * endereco){
+	tJogador aleatorio;
+	aleatorio.campoJogador=InicializaMapa(aleatorio.campoJogador);
 	FILE * tabuleiroAleatorio=fopen(endereco, "w");
 	if(!tabuleiroAleatorio){
 		printf("Erro com o arquivo");
@@ -957,22 +959,68 @@ void gerarTabuleiroAleatorio(char * endereco){
 		}
 	}
 	for(i=0;i<5;i++){ // 5 é a quantidade de navios
+		aleatorio.posicaoInicial.id=i+1;
 		switch (ordem[i])
 		{
 		case CARRIER:
 			fprintf(tabuleiroAleatorio, "Carrier;");
+			do{
+				aleatorio.posicaoInicial.orientacao=rand()%2; aleatorio.posicaoInicial.linha=rand()%TAM_TABULEIRO+'a'; aleatorio.posicaoInicial.coluna=rand()%TAM_TABULEIRO;
+			}
+			while(EhPossivelcolocarPeca(CARRIER, aleatorio)==0);
+			fprintf(tabuleiroAleatorio,"%d;%d;%c%d", i+1, aleatorio.posicaoInicial.orientacao, aleatorio.posicaoInicial.linha, aleatorio.posicaoInicial.coluna+1);
+			aleatorio.campoJogador=ColocaPeca(CARRIER, aleatorio.posicaoInicial, aleatorio.campoJogador);
+			if(i!=4){
+				fprintf(tabuleiroAleatorio, "\n");
+			}
 			break;
 		case BATTLESHIP:
 			fprintf(tabuleiroAleatorio, "Battleship;");
+			do{
+				aleatorio.posicaoInicial.orientacao=rand()%2; aleatorio.posicaoInicial.linha=rand()%TAM_TABULEIRO+'a'; aleatorio.posicaoInicial.coluna=rand()%TAM_TABULEIRO;
+			}
+			while(EhPossivelcolocarPeca(BATTLESHIP, aleatorio)==0);
+			fprintf(tabuleiroAleatorio,"%d;%d;%c%d", i+1, aleatorio.posicaoInicial.orientacao, aleatorio.posicaoInicial.linha, aleatorio.posicaoInicial.coluna+1);
+			aleatorio.campoJogador=ColocaPeca(BATTLESHIP, aleatorio.posicaoInicial, aleatorio.campoJogador);
+			if(i!=4){
+				fprintf(tabuleiroAleatorio, "\n");
+			}
 			break;
 		case CRUISER:
 			fprintf(tabuleiroAleatorio, "Cruiser;");
+			do{
+				aleatorio.posicaoInicial.orientacao=rand()%2; aleatorio.posicaoInicial.linha=rand()%TAM_TABULEIRO+'a'; aleatorio.posicaoInicial.coluna=rand()%TAM_TABULEIRO;
+			}
+			while(EhPossivelcolocarPeca(CRUISER, aleatorio)==0);
+			fprintf(tabuleiroAleatorio,"%d;%d;%c%d", i+1, aleatorio.posicaoInicial.orientacao, aleatorio.posicaoInicial.linha, aleatorio.posicaoInicial.coluna+1);
+			aleatorio.campoJogador=ColocaPeca(CRUISER, aleatorio.posicaoInicial, aleatorio.campoJogador);
+			if(i!=4){
+				fprintf(tabuleiroAleatorio, "\n");
+			}
 			break;
 		case SUBMARINE:
 			fprintf(tabuleiroAleatorio, "Submarine;");
+			do{
+				aleatorio.posicaoInicial.orientacao=rand()%2; aleatorio.posicaoInicial.linha=rand()%TAM_TABULEIRO+'a'; aleatorio.posicaoInicial.coluna=rand()%TAM_TABULEIRO;
+			}
+			while(EhPossivelcolocarPeca(SUBMARINE, aleatorio)==0);
+			fprintf(tabuleiroAleatorio,"%d;%d;%c%d", i+1, aleatorio.posicaoInicial.orientacao, aleatorio.posicaoInicial.linha, aleatorio.posicaoInicial.coluna+1);
+			aleatorio.campoJogador=ColocaPeca(SUBMARINE, aleatorio.posicaoInicial, aleatorio.campoJogador);
+			if(i!=4){
+				fprintf(tabuleiroAleatorio, "\n");
+			}
 			break;
 		case DESTROYER:
 			fprintf(tabuleiroAleatorio, "Destroyer;");
+			do{
+				aleatorio.posicaoInicial.orientacao=rand()%2; aleatorio.posicaoInicial.linha=rand()%TAM_TABULEIRO +'a'; aleatorio.posicaoInicial.coluna=rand()%TAM_TABULEIRO;
+			}
+			while(EhPossivelcolocarPeca(DESTROYER, aleatorio)==0);
+			fprintf(tabuleiroAleatorio,"%d;%d;%c%d", i+1, aleatorio.posicaoInicial.orientacao, aleatorio.posicaoInicial.linha, aleatorio.posicaoInicial.coluna+1);
+			aleatorio.campoJogador=ColocaPeca(DESTROYER, aleatorio.posicaoInicial, aleatorio.campoJogador);
+			if(i!=4){
+				fprintf(tabuleiroAleatorio, "\n");
+			}
 			break;
 		default:
 			printf("Erro no reconhecimento da ordem do navio tabuleiro aleatorio");
