@@ -13,7 +13,7 @@ Exemplo:
 
 $tabu1.txt
 
-Carrier;1;0;e2
+Carrier;1;0;e
 Battleship;2;1;a1
 Battleship;3;0;b10
 Submarine;4;1;e5
